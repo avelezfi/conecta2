@@ -1,11 +1,12 @@
-import ListaVacantes from "../Componentes/ListaVacantes";
-import { vacantes } from "../data/vacantes";
-
-export default function Vacantes() {
+export default function ListaVacantes({ Vacantes }) {
   return (
-  <div>
-      <h2>Vacantes</h2>
-      <ListaVacantes vacantes={vacantes} />
-  </div>
-  )
+    <div>
+      {Vacantes.map((v) => (
+        <div key={v.id}>
+          <h3>{v.titulo}</h3>
+          <p>{v.empresa}</p>
+        </div>
+      ))}
+    </div>
+  );
 }
