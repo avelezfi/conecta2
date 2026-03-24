@@ -1,4 +1,4 @@
-import ListaVacantes from "./ListaVacantes";
+import ListaVacantes from "../Componentes/ListaVacantes";
 import { vacantes } from "../data/vacantes";
 
 export default function Vacantes() {
