@@ -7,5 +7,5 @@ export default function Vacantes() {
       <h2>Vacantes</h2>
       <ListaVacantes vacantes={vacantes} />
   </div>
-  )
+  );
 }
