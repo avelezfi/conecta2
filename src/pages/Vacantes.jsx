@@ -1,5 +1,11 @@
-function Vacantes() {
-  return <h1>Vacantes</h1>;
-}
+import ListaVacantes from "../Componentes/ListaVacantes";
+import { vacantes } from "../data/vacantes";
 
-export default Vacantes;
+export default function Vacantes() {
+  return (
+  <div>
+      <h2>Vacantes</h2>
+      <ListaVacantes vacantes={vacantes} />
+  </div>
+  )
+}
