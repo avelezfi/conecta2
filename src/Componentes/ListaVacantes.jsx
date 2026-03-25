@@ -1,7 +1,7 @@
-export default function ListaVacantes({ Vacantes }) {
+export default function ListaVacantes({ vacantes }) {
   return (
     <div>
-      {Vacantes.map((v) => (
+      {vacantes.map((v) => (
         <div key={v.id}>
           <h3>{v.titulo}</h3>
           <p>{v.empresa}</p>
