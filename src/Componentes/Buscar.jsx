@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Postulacion from "./Postulacion";
 
 export default function Buscar({ vacantes }) {
   const [busqueda, setBusqueda] = useState("");
@@ -15,6 +16,11 @@ export default function Buscar({ vacantes }) {
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />
+       {resultados.map((v) => (
+        <div>
+        <Postulacion key={v.id} vacante={v} empresa={v.empresa} />
+        </div>
+      ))}
     </div>
   );
 }
