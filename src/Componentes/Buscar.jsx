@@ -15,13 +15,6 @@ export default function Buscar({ vacantes }) {
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />
-
-      {resultados.map((v) => (
-        <div key={v.id}>
-          <h3>{v.titulo}</h3>
-          <p>{v.empresa}</p>
-        </div>
-      ))}
     </div>
   );
 }
