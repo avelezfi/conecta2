@@ -10,7 +10,7 @@ export default function Buscar({ vacantes }) {
 
   return (
     <div>
-      <input
+      <input style={ { padding: '10px', margin: '10px' } }
         type="text"
         placeholder="Buscar vacante..."
         value={busqueda}
