@@ -26,6 +26,19 @@ router.post('/', async (req, res) => {
   const { id_estudiante, id_vacante } = req.body;
   try {
     const pool = await poolPromise;
+
+    // Verificar si ya existe la postulación
+    const existe = await pool.request()
+      .input('id_estudiante', sql.Int, id_estudiante)
+      .input('id_vacante', sql.Int, id_vacante)
+      .query(`SELECT id_postulacion FROM POSTULACION 
+              WHERE id_estudiante = @id_estudiante 
+              AND id_vacante = @id_vacante`);
+
+    if (existe.recordset.length > 0) {
+      return res.status(400).json({ error: 'Ya estás postulado a esta vacante' });
+    }
+
     await pool.request()
       .input('id_estudiante', sql.Int, id_estudiante)
       .input('id_vacante', sql.Int, id_vacante)
@@ -33,10 +46,9 @@ router.post('/', async (req, res) => {
       .input('estado', sql.VarChar, 'pendiente')
       .query(`INSERT INTO POSTULACION (id_estudiante, id_vacante, fecha, estado)
               VALUES (@id_estudiante, @id_vacante, @fecha, @estado)`);
+
     res.json({ ok: true, mensaje: 'Postulación enviada' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-module.exports = router;
+});module.exports = router;

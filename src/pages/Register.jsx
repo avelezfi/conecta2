@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 
-function Registro({ estudiantes, empresas, actualizarEstudiantes, actualizarEmpresas, setPagina }) {
+function Registro({ setPagina }) {
   const [tipo, setTipo] = useState("estudiante");
   const [mensaje, setMensaje] = useState("");
+  const [cargando, setCargando] = useState(false);
 
   const [formEstudiante, setFormEstudiante] = useState({
-    nombre: "", email: "", password: "", telefono: "",
-    ciudad: "", programa: "", semestre: "", institucion: "",
-    cargoDeseado: "", empresaActual: "",
+    nombre: "", apellido: "", email: "", password: "",
+    telefono: "", programa: "", semestre: "",
   });
 
   const [formEmpresa, setFormEmpresa] = useState({
     nombre: "", nit: "", email: "", password: "",
-    ciudad: "", sector: "", descripcion: "",
+    sector: "", descripcion: "",
   });
 
   const handleChangeEstudiante = (e) =>
@@ -23,33 +23,114 @@ function Registro({ estudiantes, empresas, actualizarEstudiantes, actualizarEmpr
   const handleChangeEmpresa = (e) =>
     setFormEmpresa({ ...formEmpresa, [e.target.name]: e.target.value });
 
-  const handleRegistro = () => {
-    if (tipo === "estudiante") {
-      if (!formEstudiante.nombre || !formEstudiante.email || !formEstudiante.password) {
-        setMensaje("Nombre, correo y contraseña son obligatorios"); return;
+  const handleRegistro = async () => {
+    setCargando(true);
+    setMensaje("");
+
+    try {
+      if (tipo === "estudiante") {
+        if (!formEstudiante.nombre || !formEstudiante.email || !formEstudiante.password) {
+          setMensaje("Nombre, correo y contraseña son obligatorios");
+          setCargando(false); return;
+        }
+        if (formEstudiante.password.length < 6) {
+          setMensaje("La contraseña debe tener mínimo 6 caracteres");
+          setCargando(false); return;
+        }
+
+        // 1. Crear estudiante
+        const resEst = await fetch("http://localhost:3001/api/estudiantes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nombre: formEstudiante.nombre,
+            apellido: formEstudiante.apellido,
+            correo: formEstudiante.email,
+            telefono: formEstudiante.telefono,
+            programa: formEstudiante.programa,
+            semestre: parseInt(formEstudiante.semestre) || 1,
+          })
+        });
+        const dataEst = await resEst.json();
+        if (!resEst.ok) {
+          setMensaje(dataEst.error || "Error al registrar estudiante");
+          setCargando(false); return;
+        }
+
+        // 2. Crear usuario vinculado al estudiante
+        const resUsu = await fetch("http://localhost:3001/api/usuarios/registro", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            correo: formEstudiante.email,
+            contrasena: formEstudiante.password,
+            rol: "estudiante",
+            id_estudiante: dataEst.id,
+            id_empresa: null
+          })
+        });
+        const dataUsu = await resUsu.json();
+        if (!resUsu.ok) {
+          setMensaje(dataUsu.error || "Error al crear usuario");
+          setCargando(false); return;
+        }
+
+        setMensaje("¡Estudiante registrado con éxito!");
+        setTimeout(() => setPagina("login"), 1500);
+
+      } else {
+        if (!formEmpresa.nombre || !formEmpresa.email || !formEmpresa.password || !formEmpresa.nit) {
+          setMensaje("Nombre, NIT, correo y contraseña son obligatorios");
+          setCargando(false); return;
+        }
+        if (formEmpresa.password.length < 6) {
+          setMensaje("La contraseña debe tener mínimo 6 caracteres");
+          setCargando(false); return;
+        }
+
+        // 1. Crear empresa
+        const resEmp = await fetch("http://localhost:3001/api/empresas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nombre: formEmpresa.nombre,
+            nit: formEmpresa.nit,
+            sector: formEmpresa.sector,
+            correo_contacto: formEmpresa.email,
+            descripcion: formEmpresa.descripcion,
+          })
+        });
+        const dataEmp = await resEmp.json();
+        if (!resEmp.ok) {
+          setMensaje(dataEmp.error || "Error al registrar empresa");
+          setCargando(false); return;
+        }
+
+        // 2. Crear usuario vinculado a la empresa
+        const resUsu = await fetch("http://localhost:3001/api/usuarios/registro", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            correo: formEmpresa.email,
+            contrasena: formEmpresa.password,
+            rol: "empresa",
+            id_estudiante: null,
+            id_empresa: dataEmp.id
+          })
+        });
+        const dataUsu = await resUsu.json();
+        if (!resUsu.ok) {
+          setMensaje(dataUsu.error || "Error al crear usuario");
+          setCargando(false); return;
+        }
+
+        setMensaje("¡Empresa registrada con éxito!");
+        setTimeout(() => setPagina("login"), 1500);
       }
-      if (formEstudiante.password.length < 6) {
-        setMensaje("La contraseña debe tener mínimo 6 caracteres"); return;
-      }
-      if (estudiantes.find((u) => u.email === formEstudiante.email)) {
-        setMensaje("Este correo ya está registrado"); return;
-      }
-      actualizarEstudiantes([...estudiantes, { id: Date.now(), tipo: "estudiante", ...formEstudiante }]);
-      setMensaje("¡Estudiante registrado con éxito!");
-      setTimeout(() => setPagina("login"), 1500);
-    } else {
-      if (!formEmpresa.nombre || !formEmpresa.email || !formEmpresa.password || !formEmpresa.nit) {
-        setMensaje("Nombre, NIT, correo y contraseña son obligatorios"); return;
-      }
-      if (formEmpresa.password.length < 6) {
-        setMensaje("La contraseña debe tener mínimo 6 caracteres"); return;
-      }
-      if (empresas.find((u) => u.email === formEmpresa.email)) {
-        setMensaje("Este correo ya está registrado"); return;
-      }
-      actualizarEmpresas([...empresas, { id: Date.now(), tipo: "empresa", ...formEmpresa }]);
-      setMensaje("¡Empresa registrada con éxito!");
-      setTimeout(() => setPagina("login"), 1500);
+    } catch (err) {
+      setMensaje("Error al conectar con el servidor");
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -73,10 +154,13 @@ function Registro({ estudiantes, empresas, actualizarEstudiantes, actualizarEmpr
       {tipo === "estudiante" && (
         <>
           <div className="seccion">
-            <h4> Información Personal</h4>
+            <h4>Información Personal</h4>
             <div className="grid-2">
-              <label className="campo">Nombre completo
+              <label className="campo">Nombre
                 <input name="nombre" value={formEstudiante.nombre} onChange={handleChangeEstudiante} />
+              </label>
+              <label className="campo">Apellido
+                <input name="apellido" value={formEstudiante.apellido} onChange={handleChangeEstudiante} />
               </label>
               <label className="campo">Correo electrónico
                 <input name="email" type="email" value={formEstudiante.email} onChange={handleChangeEstudiante} />
@@ -87,35 +171,17 @@ function Registro({ estudiantes, empresas, actualizarEstudiantes, actualizarEmpr
               <label className="campo">Teléfono
                 <input name="telefono" value={formEstudiante.telefono} onChange={handleChangeEstudiante} />
               </label>
-              <label className="campo">Ciudad
-                <input name="ciudad" value={formEstudiante.ciudad} onChange={handleChangeEstudiante} />
-              </label>
             </div>
           </div>
 
           <div className="seccion">
-            <h4> Información Académica</h4>
+            <h4>Información Académica</h4>
             <div className="grid-2">
               <label className="campo">Programa
                 <input name="programa" value={formEstudiante.programa} onChange={handleChangeEstudiante} />
               </label>
               <label className="campo">Semestre
-                <input name="semestre" value={formEstudiante.semestre} onChange={handleChangeEstudiante} />
-              </label>
-              <label className="campo">Institución
-                <input name="institucion" value={formEstudiante.institucion} onChange={handleChangeEstudiante} />
-              </label>
-            </div>
-          </div>
-
-          <div className="seccion">
-            <h4> Información Laboral</h4>
-            <div className="grid-2">
-              <label className="campo">Cargo deseado
-                <input name="cargoDeseado" value={formEstudiante.cargoDeseado} onChange={handleChangeEstudiante} />
-              </label>
-              <label className="campo">Empresa actual
-                <input name="empresaActual" value={formEstudiante.empresaActual} onChange={handleChangeEstudiante} />
+                <input name="semestre" type="number" value={formEstudiante.semestre} onChange={handleChangeEstudiante} />
               </label>
             </div>
           </div>
@@ -124,7 +190,7 @@ function Registro({ estudiantes, empresas, actualizarEstudiantes, actualizarEmpr
 
       {tipo === "empresa" && (
         <div className="seccion">
-          <h4> Datos de la Empresa</h4>
+          <h4>Datos de la Empresa</h4>
           <div className="grid-2">
             <label className="campo">Nombre de la empresa
               <input name="nombre" value={formEmpresa.nombre} onChange={handleChangeEmpresa} />
@@ -137,9 +203,6 @@ function Registro({ estudiantes, empresas, actualizarEstudiantes, actualizarEmpr
             </label>
             <label className="campo">Contraseña
               <input name="password" type="password" value={formEmpresa.password} onChange={handleChangeEmpresa} />
-            </label>
-            <label className="campo">Ciudad
-              <input name="ciudad" value={formEmpresa.ciudad} onChange={handleChangeEmpresa} />
             </label>
             <label className="campo">Sector
               <input name="sector" value={formEmpresa.sector} onChange={handleChangeEmpresa} />
@@ -158,7 +221,9 @@ function Registro({ estudiantes, empresas, actualizarEstudiantes, actualizarEmpr
       )}
 
       <div className="botones">
-        <button className="btn-primary" onClick={handleRegistro}>Registrarse</button>
+        <button className="btn-primary" onClick={handleRegistro} disabled={cargando}>
+          {cargando ? "Registrando..." : "Registrarse"}
+        </button>
         <span className="link" onClick={() => setPagina("login")}>¿Ya tienes cuenta? Inicia sesión</span>
       </div>
     </div>

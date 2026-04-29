@@ -29,7 +29,21 @@ export default function Vacantes({ usuarioActivo }) {
         setError("No se pudieron cargar las vacantes");
         setCargando(false);
       });
-  }, []);
+
+  // Cargar postulaciones previas si hay usuario activo
+  if (usuarioActivo?.id_estudiante) {
+    fetch(`http://localhost:3001/api/postulaciones/estudiante/${usuarioActivo.id_estudiante}`)
+      .then(res => res.json())
+      .then(data => {
+        const idsPostulados = data.map(p => p.id_vacante);
+        setPostuladas(idsPostulados);
+      })
+      .catch(() => {});
+  }
+}, []);
+
+
+
 
   const vacantesFiltradas = vacantesData.filter((v) =>
     v.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||

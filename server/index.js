@@ -6,6 +6,8 @@ const { poolPromise } = require('./db');
 const vacantesRouter = require('./routes/vacantes');
 const usuariosRouter = require('./routes/usuarios');
 const postulacionesRouter = require('./routes/postulaciones');
+const estudiantesRouter = require('./routes/estudiantes');
+const empresasRouter = require('./routes/empresas');
 
 const app = express();
 
@@ -19,6 +21,8 @@ app.get('/api/ping', (req, res) => {
 app.use('/api/vacantes', vacantesRouter);
 app.use('/api/usuarios', usuariosRouter);
 app.use('/api/postulaciones', postulacionesRouter);
+app.use('/api/estudiantes', estudiantesRouter);
+app.use('/api/empresas', empresasRouter);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
