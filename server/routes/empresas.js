@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { sql, poolPromise } = require('../db');
+const authenticateToken = require('../middleware/auth');
 
 // GET todas las empresas
 router.get('/', async (req, res) => {
@@ -13,6 +14,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // GET empresa por id
 router.get('/:id', async (req, res) => {
