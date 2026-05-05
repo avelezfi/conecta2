@@ -6,48 +6,42 @@ const { body, validationResult } = require('express-validator');
 const { sql, poolPromise } = require('../db');
 const authenticateToken = require('../middleware/auth');
 
-// POST login
 router.post('/login', async (req, res) => {
   const { correo, contrasena } = req.body;
-  console.log('Datos recibidos:', { correo, contrasena }); 
+  
+  if (!correo || !contrasena) {
+    return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
+  }
+
   try {
     const pool = await poolPromise;
     const result = await pool.request()
       .input('correo', sql.VarChar, correo)
-      .input('contrasena', sql.VarChar, contrasena)
-      .query('SELECT * FROM USUARIO WHERE correo = @correo AND contrasena = @contrasena');
+      .query('SELECT * FROM USUARIO WHERE correo = @correo'); // ← solo por correo
     
     if (result.recordset.length === 0) {
       return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
     }
 
-
-     // Validar que correo y contraseña no estén vacíos
-    if (!correo || !contrasena) {
-    return res.status(400).json({ 
-      error: 'Correo y contraseña son requeridos' 
-    });
-    }
-      // Validar formato de correo
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(correo)) {
-    return res.status(400).json({ 
-      error: 'Formato de correo inválido' 
-    });
-    }
-    
-
     const usuario = result.recordset[0];
     const passwordMatches = bcrypt.compareSync(contrasena, usuario.contrasena);
+    
     if (!passwordMatches) {
       return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
     }
-    const token = jwt.sign({ id: usuario.id_usuario, rol: usuario.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ ok: true, token, usuario: result.recordset[0] });
+
+    const token = jwt.sign(
+      { id: usuario.id_usuario, rol: usuario.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    res.json({ ok: true, token, usuario });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // GET mi perfil
 router.get('/mi-perfil', authenticateToken, async (req, res) => {
