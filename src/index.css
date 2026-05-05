@@ -15,4 +15,38 @@ html, body {
   width: 100%;
   min-height: 100vh;
   background-color: #e0f2f1;
-}  
+} 
+
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.hero {
+  max-width: 800px;
+  margin-top: 60px;
+}
+
+.info {
+  display: flex;
+  gap: 30px;
+  margin-top: 50px;
+  max-width: 1000px;
+}
+
+.info div {
+  flex: 1;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.logo {
+  width: 800px;
+  height: auto;
+  margin-bottom: 20px;
+}
