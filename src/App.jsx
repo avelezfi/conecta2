@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Home from "./pages/Home";
 import Vacantes from "./pages/Vacantes";
@@ -105,6 +106,9 @@ function App() {
       {renderPagina()}
     </div>
   );
+
+
+
 }
 
 export default App;
