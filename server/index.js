@@ -21,8 +21,8 @@ app.get('/api/ping', (req, res) => {
   res.json({ ok: true, mensaje: 'Servidor funcionando' });
 });
 
-app.use('/api/vacantes', authenticateToken, vacantesRouter);
-app.use('/api/usuarios', authenticateToken,usuariosRouter);
+app.use('/api/vacantes', vacantesRouter);
+app.use('/api/usuarios', usuariosRouter);
 app.use('/api/postulaciones', postulacionesRouter);
 app.use('/api/estudiantes', estudiantesRouter);
 app.use('/api/empresas', empresasRouter);

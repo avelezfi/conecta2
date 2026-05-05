@@ -18,19 +18,24 @@ export default function Vacantes({ usuarioActivo }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetch("http://localhost:3001/api/vacantes")
-      .then(res => res.json())
-      .then(data => {
-        setVacantesData(data);
-        setCargando(false);
-      })
-      .catch(err => {
-        setError("No se pudieron cargar las vacantes");
-        setCargando(false);
-      });
+  useEffect(() => { 
+   const token = localStorage.getItem("token");
 
-  // Cargar postulaciones previas si hay usuario activo
+  fetch("http://localhost:3001/api/vacantes", {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      setVacantesData(data);
+      setCargando(false);
+    })
+    .catch(err => {
+      setError("No se pudieron cargar las vacantes");
+      setCargando(false);
+    });
+
   if (usuarioActivo?.id_estudiante) {
     fetch(`http://localhost:3001/api/postulaciones/estudiante/${usuarioActivo.id_estudiante}`)
       .then(res => res.json())
