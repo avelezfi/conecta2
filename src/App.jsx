@@ -8,6 +8,8 @@ import Registro from "./pages/Register";
 import Perfil from "./pages/Perfil";
 import PerfilEmpresa from "./pages/PerfilEmpresas";
 import Seguimiento from "./pages/Seguimiento";
+import PublicarVacante from "./pages/PublicarVacante";
+
 
 function App() {
   const [usuarioActivo, setUsuarioActivo] = useState(() => {
@@ -76,6 +78,14 @@ function App() {
         return <Seguimiento usuarioActivo={usuarioActivo} />;
       default:
         return <Home />;
+        case "publicar":
+  return (
+    <PublicarVacante
+      usuarioActivo={usuarioActivo}
+      setPagina={setPagina}
+    />
+  );
+
     }
   };
 
@@ -99,6 +109,13 @@ function App() {
             )}
             <span onClick={() => setPagina("perfil")}> Perfil ({tipoUsuario})</span> |
             <span onClick={cerrarSesion}> Cerrar sesión</span>
+            {tipoUsuario === "empresa" && (
+            <span onClick={() => setPagina("publicar")}> Publicar vacante</span>
+        )}
+
+
+
+
           </>
         )}
       </nav>
@@ -110,5 +127,6 @@ function App() {
 
 
 }
+
 
 export default App;

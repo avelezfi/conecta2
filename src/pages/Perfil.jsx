@@ -33,7 +33,23 @@ function Perfil({ usuarioActivo, actualizarUsuarioActivo, cerrarSesion, setPagin
       </div>
     );
   }
+   useEffect(() => {
+  if (!usuarioActivo) return;
 
+  // Agrega este console.log para confirmar
+  console.log("UsuarioActivo completo:", usuarioActivo);
+
+  const id = usuarioActivo.id_estudiante || usuarioActivo.id_empresa;
+  console.log("ID encontrado:", id);
+  console.log("Rol:", usuarioActivo.rol);
+
+  if (!id) {
+    console.error(" No se encontró id_empresa ni id_estudiante");
+    setCargando(false);
+    return;
+  }
+  // ... resto del código
+}, [usuarioActivo]);
   if (cargando) return <div className="contenedor"><p>Cargando perfil...</p></div>;
 
   const handleEditar = () => { setForm({ ...perfil }); setEditando(true); };
@@ -56,7 +72,7 @@ function Perfil({ usuarioActivo, actualizarUsuarioActivo, cerrarSesion, setPagin
       if (data.ok) {
         setPerfil(form);
         setEditando(false);
-        alert("Perfil guardado ✅");
+        alert("Perfil guardado ");
       }
     } catch (err) {
       alert("Error al guardar");

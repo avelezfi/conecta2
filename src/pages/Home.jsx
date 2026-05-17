@@ -3,10 +3,7 @@ import logo from "../assets/logo.jpg";
 export default function Home() {
   return (
     <div className="home">
-      <header className="navbar">
-        <nav></nav>
-      </header>
-
+     
       <section className="hero">
         <img src={logo} alt="Conecta2 logo" className="logo" />
 

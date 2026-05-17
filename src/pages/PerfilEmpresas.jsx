@@ -1,10 +1,31 @@
+import { useState, useEffect } from "react";
 
-
-import { useState } from "react";
-
-function PerfilEmpresa({ usuarioActivo, empresas, actualizarEmpresas, actualizarUsuarioActivo, cerrarSesion, setPagina }) {
+function PerfilEmpresa({ usuarioActivo, actualizarUsuarioActivo, cerrarSesion, setPagina }) {
   const [editando, setEditando] = useState(false);
+  const [perfil, setPerfil] = useState(null);
   const [form, setForm] = useState({});
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    if (!usuarioActivo) return;
+
+    // Bug 1 fix: usar id_empresa del usuario para buscar los datos reales
+    const id = usuarioActivo.id_empresa;
+
+    if (!id) {
+      console.error("No se encontró id_empresa en usuarioActivo:", usuarioActivo);
+      setCargando(false);
+      return;
+    }
+
+    fetch(`http://localhost:3001/api/empresas/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        setPerfil(data);
+        setCargando(false);
+      })
+      .catch(() => setCargando(false));
+  }, [usuarioActivo]);
 
   if (!usuarioActivo) {
     return (
@@ -15,20 +36,38 @@ function PerfilEmpresa({ usuarioActivo, empresas, actualizarEmpresas, actualizar
     );
   }
 
-  const handleEditar = () => { setForm({ ...usuarioActivo }); setEditando(true); };
+  if (cargando) return <div className="contenedor"><p>Cargando perfil...</p></div>;
+
+  if (!perfil) return (
+    <div className="contenedor">
+      <p style={{ color: "red" }}>No se encontró información de la empresa. id_empresa: {String(usuarioActivo.id_empresa)}</p>
+    </div>
+  );
+
+  const handleEditar = () => { setForm({ ...perfil }); setEditando(true); };
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleGuardar = () => {
-    const actualizadas = empresas.map((e) => e.id === usuarioActivo.id ? form : e);
-    actualizarEmpresas(actualizadas);
-    actualizarUsuarioActivo(form, "empresa");
-    setEditando(false);
-    alert("Perfil guardado ✅");
+  const handleGuardar = async () => {
+    const id = usuarioActivo.id_empresa;
+    try {
+      const res = await fetch(`http://localhost:3001/api/empresas/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setPerfil(form);
+        setEditando(false);
+        alert("Perfil guardado ✅");
+      }
+    } catch (err) {
+      alert("Error al guardar");
+    }
   };
 
   const handleEliminar = () => {
     if (window.confirm("¿Eliminar perfil de empresa?")) {
-      actualizarEmpresas(empresas.filter((e) => e.id !== usuarioActivo.id));
       cerrarSesion();
       setPagina("home");
     }
@@ -44,31 +83,29 @@ function PerfilEmpresa({ usuarioActivo, empresas, actualizarEmpresas, actualizar
             <h4>🏢 Información de la Empresa</h4>
             <table className="tabla-perfil">
               <tbody>
-                <tr><td>Nombre</td><td>{usuarioActivo.nombre}</td></tr>
-                <tr><td>NIT</td><td>{usuarioActivo.nit}</td></tr>
-                <tr><td>Correo</td><td>{usuarioActivo.email}</td></tr>
-                <tr><td>Ciudad</td><td>{usuarioActivo.ciudad}</td></tr>
-                <tr><td>Sector</td><td>{usuarioActivo.sector}</td></tr>
-                <tr><td>Descripción</td><td>{usuarioActivo.descripcion}</td></tr>
+                {/* Bug 3 fix: usar campos reales de la BD */}
+                <tr><td>Nombre</td><td>{perfil.nombre}</td></tr>
+                <tr><td>NIT</td><td>{perfil.nit}</td></tr>
+                <tr><td>Correo</td><td>{perfil.correo_contacto}</td></tr>
+                <tr><td>Sector</td><td>{perfil.sector}</td></tr>
+                <tr><td>Descripción</td><td>{perfil.descripcion}</td></tr>
               </tbody>
             </table>
           </div>
-
           <div className="botones">
             <button className="btn-primary" onClick={handleEditar}>Editar</button>
             <button className="btn-danger" onClick={handleEliminar}>Eliminar perfil</button>
-            <button className="btn-secondary" onClick={() => { cerrarSesion(); setPagina("home"); }}>Cerrar sesión</button>
+            <button className="btn-secondary" onClick={() => { cerrarSesion(); setPagina("home"); }}>
+              Cerrar sesión
+            </button>
           </div>
         </>
       ) : (
         <>
           <div className="seccion">
-            <h4>🏢 Editar Empresa</h4>
+            <h4>Editar Empresa</h4>
             <div className="grid-2">
               <label className="campo">Nombre<input name="nombre" value={form.nombre || ""} onChange={handleChange} /></label>
-              <label className="campo">NIT<input name="nit" value={form.nit || ""} onChange={handleChange} /></label>
-              <label className="campo">Correo<input name="email" type="email" value={form.email || ""} onChange={handleChange} /></label>
-              <label className="campo">Ciudad<input name="ciudad" value={form.ciudad || ""} onChange={handleChange} /></label>
               <label className="campo">Sector<input name="sector" value={form.sector || ""} onChange={handleChange} /></label>
             </div>
             <label className="campo">Descripción

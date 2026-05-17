@@ -27,9 +27,8 @@ html, body {
 
 .hero {
   max-width: 800px;
-  margin-top: 60px;
+  margin-top: 20px;  /* ← menos espacio arriba */
 }
-
 .info {
   display: flex;
   gap: 30px;
@@ -46,7 +45,7 @@ html, body {
 }
 
 .logo {
-  width: 800px;
+  width: 280px;      /* ← logo más pequeño */
   height: auto;
   margin-bottom: 20px;
-}
+} 

@@ -195,7 +195,7 @@ function Registro({ setPagina }) {
             <label className="campo">Nombre de la empresa
               <input name="nombre" value={formEmpresa.nombre} onChange={handleChangeEmpresa} />
             </label>
-            <label className="campo">NIT
+            <label className="campo">NIT :
               <input name="nit" value={formEmpresa.nit} onChange={handleChangeEmpresa} />
             </label>
             <label className="campo">Correo electrónico

@@ -35,3 +35,36 @@ export const vacantes = [
     salario: "$2,800 USD"
   }
 ];
+const { sql } = require('../db'); // agrega sql al import existente
+
+// POST crear vacante
+router.post('/', async (req, res) => {
+  const { titulo, descripcion, modalidad, id_empresa } = req.body;
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('titulo', sql.VarChar, titulo)
+      .input('descripcion', sql.VarChar, descripcion || null)
+      .input('modalidad', sql.VarChar, modalidad || null)
+      .input('id_empresa', sql.Int, id_empresa)
+      .query(`INSERT INTO VACANTE (titulo, descripcion, modalidad, id_empresa)
+              OUTPUT INSERTED.id_vacante
+              VALUES (@titulo, @descripcion, @modalidad, @id_empresa)`);
+    res.json({ ok: true, id: result.recordset[0].id_vacante });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE eliminar vacante
+router.delete('/:id', async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    await pool.request()
+      .input('id', sql.Int, req.params.id)
+      .query('DELETE FROM VACANTE WHERE id_vacante = @id');
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
