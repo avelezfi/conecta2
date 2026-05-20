@@ -1,84 +1,132 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import { useState,useEffect} from"react"
 
-
-
-
+import { useState } from "react";
 import Home from "./pages/Home";
 import Vacantes from "./pages/Vacantes";
 import Empresas from "./pages/Empresas";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Registro from "./pages/Register";
 import Perfil from "./pages/Perfil";
+import PerfilEmpresa from "./pages/PerfilEmpresas";
+import Seguimiento from "./pages/Seguimiento";
+import PublicarVacante from "./pages/PublicarVacante";
+
 
 function App() {
-   
-    const [usuarios, setUsuarios] = useState(() => {
-    const guardados = localStorage.getItem("usuarios");
-    return guardados ? JSON.parse(guardados) : [];
-  });
-
   const [usuarioActivo, setUsuarioActivo] = useState(() => {
     const activo = localStorage.getItem("usuarioActivo");
     return activo ? JSON.parse(activo) : null;
   });
 
-  useEffect(() => {
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-  }, [usuarios]);
+  const [tipoUsuario, setTipoUsuario] = useState(() => {
+    return localStorage.getItem("tipoUsuario") || null;
+  });
 
-  useEffect(() => {
-    if (usuarioActivo) {
-      localStorage.setItem("usuarioActivo", JSON.stringify(usuarioActivo));
-    } else {
-      localStorage.removeItem("usuarioActivo");
-    }
-  }, [usuarioActivo]);
-  
+  const actualizarUsuarioActivo = (usuario, tipo) => {
+    setUsuarioActivo(usuario);
+    setTipoUsuario(tipo);
+    localStorage.setItem("usuarioActivo", JSON.stringify(usuario));
+    localStorage.setItem("tipoUsuario", tipo);
+  };
+
+  const cerrarSesion = () => {
+    setUsuarioActivo(null);
+    setTipoUsuario(null);
+    localStorage.removeItem("usuarioActivo");
+    localStorage.removeItem("tipoUsuario");
+  };
+
+  const [pagina, setPagina] = useState("home");
+
+  const renderPagina = () => {
+    switch (pagina) {
+      case "home":
+        return <Home />;
+      case "vacantes":
+        return <Vacantes usuarioActivo={usuarioActivo} setPagina={setPagina} />;
+      case "empresas":
+        return <Empresas />;
+      case "login":
+        return (
+          <Login
+            actualizarUsuarioActivo={actualizarUsuarioActivo}
+            setPagina={setPagina}
+          />
+        );
+      case "registro":
+        return (
+          <Registro
+            setPagina={setPagina}
+          />
+        );
+      case "perfil":
+        return tipoUsuario === "empresa" ? (
+          <PerfilEmpresa
+            usuarioActivo={usuarioActivo}
+            actualizarUsuarioActivo={actualizarUsuarioActivo}
+            cerrarSesion={cerrarSesion}
+            setPagina={setPagina}
+          />
+        ) : (
+          <Perfil
+            usuarioActivo={usuarioActivo}
+            actualizarUsuarioActivo={actualizarUsuarioActivo}
+            cerrarSesion={cerrarSesion}
+            setPagina={setPagina}
+          />
+        );
+      case "seguimiento":
+        return <Seguimiento usuarioActivo={usuarioActivo} />;
+      default:
+        return <Home />;
+        case "publicar":
   return (
-    <BrowserRouter>
+    <PublicarVacante
+      usuarioActivo={usuarioActivo}
+      setPagina={setPagina}
+    />
+  );
+
+    }
+  };
+
+  return (
+    <div>
       <nav>
-        <Link to="/">Inicio</Link> | 
-        <Link to="/vacantes">Vacantes</Link> | 
-        <Link to="/empresas">Empresas</Link> | 
-        <Link to="/login">Login</Link> | 
-        <Link to="/register">Register</Link> | 
-         <Link to="/perfil">Perfil</Link> | 
-        
+        <span onClick={() => setPagina("home")}>Inicio</span> |
+        <span onClick={() => setPagina("vacantes")}> Vacantes</span> |
+        <span onClick={() => setPagina("empresas")}> Empresas</span> |
+        {!usuarioActivo ? (
+          <>
+            <span onClick={() => setPagina("login")}> Login</span> |
+            <span onClick={() => setPagina("registro")}> Registro</span>
+          </>
+        ) : (
+          <>
+            {tipoUsuario === "estudiante" && (
+              <>
+                <span onClick={() => setPagina("seguimiento")}> Seguimiento</span> |
+              </>
+            )}
+            <span onClick={() => setPagina("perfil")}> Perfil ({tipoUsuario})</span> |
+            <span onClick={cerrarSesion}> Cerrar sesión</span>
+            {tipoUsuario === "empresa" && (
+            <span onClick={() => setPagina("publicar")}> Publicar vacante</span>
+        )}
+
+
+
+
+          </>
+        )}
       </nav>
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/vacantes" element={<Vacantes />} />
-        <Route path="/empresas" element={<Empresas />} />
-        <Route path="/login" element={
-          <Login 
-            usuarios={usuarios}
-            setUsuarioActivo={setUsuarioActivo}
-          />
-        } />
-        <Route path="/register" element={
-          <Register
-            usuarios={usuarios}
-            setUsuarios={setUsuarios}
-          />
-        }/>
-        <Route path="/perfil" element={
-          <Perfil 
-            usuarioActivo={usuarioActivo}
-            setUsuarioActivo={setUsuarioActivo}
-            usuarios={usuarios}
-            setUsuarios={setUsuarios}
-
-
-
-          />
-        } />
-      
-      </Routes>
-    </BrowserRouter>
+      {renderPagina()}
+    </div>
   );
+
+
+
 }
 
-export default App;
 
+export default App;
