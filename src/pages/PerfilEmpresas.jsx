@@ -59,7 +59,7 @@ function PerfilEmpresa({ usuarioActivo, actualizarUsuarioActivo, cerrarSesion, s
       if (data.ok) {
         setPerfil(form);
         setEditando(false);
-        alert("Perfil guardado ✅");
+        alert("Perfil guardado ");
       }
     } catch (err) {
       alert("Error al guardar");
@@ -80,7 +80,7 @@ function PerfilEmpresa({ usuarioActivo, actualizarUsuarioActivo, cerrarSesion, s
       {!editando ? (
         <>
           <div className="seccion">
-            <h4>🏢 Información de la Empresa</h4>
+            <h4> Información de la Empresa</h4>
             <table className="tabla-perfil">
               <tbody>
                 {/* Bug 3 fix: usar campos reales de la BD */}
